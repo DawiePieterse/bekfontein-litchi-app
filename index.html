@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- iOS splash screen support (optional - add images if needed for full native feel) -->
+    <meta name="apple-mobile-web-app-title" content="Litchi Second Brain">
+    <link rel="icon" href="imagine_images/uEgIy.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="imagine_images/uEgIy.jpg">
+    <meta name="description" content="Litchi Second Brain - Capture, transcribe and organize photos &amp; voice notes for Bekfontein Litchi Farm">
+    <title>Litchi Second Brain • Bekfontein</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: #1e3a8a; /* Deep blue from corporate litchi packaging */
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .farm-green {
+            color: #166534;
+        }
+
+        .litchi-red {
+            color: #b91c1c;
+        }
+
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #166534;
+            letter-spacing: -0.025em;
+        }
+
+        .entry-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .entry-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .nav-tab {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-tab.active {
+            background-color: #166534;
+            color: white;
+            border-radius: 9999px;
+        }
+
+        .modal {
+            animation: modalPopIn 0.2s ease-out forwards;
+        }
+
+        @keyframes modalPopIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .live-transcript {
+            min-height: 120px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .category-chip {
+            font-size: 0.75rem;
+            padding: 0.125rem 0.625rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+
+        .photo-preview {
+            max-height: 320px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .farm-bg {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1e7d2 100%);
+        }
+
+        .metric-card {
+            background: white;
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-1px);
+        }
+
+        .toast {
+            animation: toastSlideIn 0.3s ease forwards;
+        }
+
+        .field-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .litchi-gradient {
+            background: linear-gradient(90deg, #166534, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .capture-btn {
+            transition: all 0.1s ease;
+        }
+        
+        .capture-btn:active {
+            transform: scale(0.97);
+        }
+
+        .data-table {
+            font-size: 0.95rem;
+        }
+        
+        .empty-state {
+            background-image: url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill-rule=%22evenodd%22%3E%3Cpath fill=%22%23e2e8f0%22 d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-10V8h-2v16h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 6v-4H4v4H0v2h4v4h2V8h4V6H6z%22/%3E%3C/g%3E%3C/svg%27');
+            background-repeat: no-repeat;
+            background-position: center 40px;
+            background-size: 60px;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-slate-800">
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-x-3">
+                    <!-- Logo -->
+                    <div class="flex items-center gap-x-2.5">
+                        <div class="w-10 h-10 bg-emerald-700 rounded-2xl flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-seedling text-white text-3xl"></i>
+                        </div>
+                        <div>
+                            <span class="font-display text-2xl font-semibold tracking-tighter farm-green">Litchi</span>
+                            <span class="font-display text-2xl font-semibold tracking-tighter text-blue-700">Second Brain</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-x-3">
+                    <!-- Farm info -->
+                    <div class="hidden sm:flex items-center gap-x-2 px-3 py-1.5 bg-stone-100 rounded-3xl text-sm">
+                        <i class="fa-solid fa-map-marker-alt text-blue-700"></i>
+                        <span class="font-medium text-stone-700">Bekfontein</span>
+                    </div>
+                    
+                    <!-- Install PWA button -->
+                    <button id="install-btn"
+                            onclick="installPWA()"
+                            class="hidden items-center gap-x-2 px-4 py-2 text-sm font-semibold bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 rounded-3xl transition-colors">
+                        <i class="fa-solid fa-download mr-1.5"></i>
+                        <span>Install App</span>
+                    </button>
+                    
+                    <!-- User -->
+                    <div class="flex items-center gap-x-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center ring-2 ring-white">
+                            <i class="fa-solid fa-user text-emerald-700 text-sm"></i>
+                        </div>
+                        <span class="hidden md:block text-sm font-medium text-stone-600">Andre</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4">
+        <!-- Two rows on mobile to prevent overlapping -->
+        <div class="grid grid-cols-2 gap-1 bg-white p-1 rounded-3xl shadow-sm border border-stone-200 w-full max-w-[340px] mx-auto">
+            <button onclick="showPage('capture-page')" 
+                    class="nav-tab active flex items-center justify-center gap-x-2 px-4 py-2.5 text-sm font-semibold rounded-3xl" id="tab-capture">
+                <i class="fa-solid fa-plus w-4"></i>
+                <span>Capture</span>
+            </button>
+            <button onclick="showPage('dashboard-page')" 
+                    class="nav-tab flex items-center justify-center gap-x-2 px-4 py-2.5 text-sm font-semibold text-stone-600 hover:text-stone-800 rounded-3xl" id="tab-dashboard">
+                <i class="fa-solid fa-chart-line w-4"></i>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="showPage('entries-page')" 
+                    class="nav-tab flex items-center justify-center gap-x-2 px-4 py-2.5 text-sm font-semibold text-stone-600 hover:text-stone-800 rounded-3xl" id="tab-entries">
+                <i class="fa-solid fa-list w-4"></i>
+                <span>All Entries</span>
+            </button>
+            <button onclick="showPage('export-page')" 
+                    class="nav-tab flex items-center justify-center gap-x-2 px-4 py-2.5 text-sm font-semibold text-stone-600 hover:text-stone-800 rounded-3xl" id="tab-export">
+                <i class="fa-solid fa-file-export w-4"></i>
+                <span>Export</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        
+        <!-- CAPTURE PAGE -->
+        <div id="capture-page" class="page">
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6">
+                    <h1 class="text-3xl font-semibold tracking-tight">Capture Field Insight</h1>
+                    <p class="text-stone-600 mt-1">Speak or photograph. It becomes structured knowledge instantly.</p>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-stone-200 p-6 space-y-6">
+                    
+                    <!-- Language & Category Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Language -->
+                        <div>
+                            <label class="field-label block mb-1.5">Voice Language</label>
+                            <select id="stt-lang" onchange="updateSTTLanguage()"
+                                    class="w-full px-4 py-3 bg-white border border-stone-300 rounded-2xl text-sm focus:outline-none focus:border-blue-500">
+                                <option value="af-ZA">Afrikaans (South Africa)</option>
+                                <option value="en-ZA">English (South Africa)</option>
+                                <option value="en-US">English (US)</option>
+                                <option value="en-GB">English (UK)</option>
+                            </select>
+                            <p class="text-[10px] text-stone-500 mt-1 px-1">Best accuracy on Chrome/Edge • Works offline in recent versions</p>
+                        </div>
+                        
+                        <!-- Category -->
+                        <div>
+                            <label class="field-label block mb-1.5">Section / Category</label>
+                            <div class="flex gap-2">
+                                <select id="category-select" 
+                                        class="flex-1 px-4 py-3 bg-white border border-stone-300 rounded-2xl text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="Crop Health &amp; Pests">Crop Health &amp; Pests</option>
+                                    <option value="Fruit Development &amp; Ripening">Fruit Development &amp; Ripening</option>
+                                    <option value="Harvest Observations">Harvest Observations</option>
+                                    <option value="Weather &amp; Climate Impact">Weather &amp; Climate Impact</option>
+                                    <option value="Worker &amp; Team Notes">Worker &amp; Team Notes</option>
+                                    <option value="Equipment &amp; Maintenance">Equipment &amp; Maintenance</option>
+                                    <option value="Block Maintenance">Block Maintenance</option>
+                                    <option value="Quality &amp; Post-Harvest">Quality &amp; Post-Harvest</option>
+                                    <option value="Safety &amp; Incidents">Safety &amp; Incidents</option>
+                                    <option value="Ideas &amp; Improvements">Ideas &amp; Improvements</option>
+                                    <option value="General Observations">General Observations</option>
+                                </select>
+                                <button onclick="useCustomCategory()" 
+                                        class="px-4 py-3 border border-stone-300 hover:bg-stone-50 rounded-2xl text-sm font-medium flex items-center gap-x-1.5 transition-colors">
+                                    <i class="fa-solid fa-edit text-xs"></i>
+                                    <span class="hidden sm:inline">Custom</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block -->
+                    <div>
+                        <label class="field-label block mb-1.5">Block / Location</label>
+                        <input id="block-input" type="text" placeholder="e.g. Block 4 North, Row 12-18 or 'Near pump station'"
+                               class="w-full px-4 py-3 bg-white border border-stone-300 rounded-2xl text-sm placeholder:text-stone-400 focus:outline-none focus:border-blue-500">
+                        <p class="text-[10px] text-stone-500 mt-1 px-1">Use the same naming as your harvesting app for easy cross-reference</p>
+                    </div>
+
+                    <!-- GPS Toggle -->
+                    <div class="flex items-center gap-x-3 bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3">
+                        <input type="checkbox" id="gps-toggle" checked class="w-5 h-5 accent-blue-700">
+                        <div>
+                            <label for="gps-toggle" class="font-medium text-sm cursor-pointer select-none">Attach current GPS location</label>
+                            <p class="text-xs text-stone-500">Records exact position of the note (recommended for field observations)</p>
+                        </div>
+                    </div>
+
+                    <!-- Voice Capture -->
+                    <div>
+                        <label class="field-label block mb-1.5">Voice Note • Speak clearly</label>
+                        
+                        <div class="border border-stone-200 rounded-3xl p-4 bg-stone-50">
+                            <div class="flex items-center gap-x-3 mb-3">
+                                <button id="mic-btn"
+                                        onclick="toggleVoiceRecognition()"
+                                        class="capture-btn flex-1 flex items-center justify-center gap-x-3 px-6 py-4 bg-blue-800 hover:bg-blue-900 active:bg-blue-950 text-white rounded-2xl font-semibold text-base shadow-sm">
+                                    <i id="mic-icon" class="fa-solid fa-microphone text-xl"></i>
+                                    <span id="mic-text">Start Recording &amp; Transcribe</span>
+                                </button>
+                                
+                                <button onclick="clearVoice()" 
+                                        class="px-5 py-4 border border-stone-300 hover:bg-white rounded-2xl text-sm font-medium text-stone-600 transition-colors">
+                                    <i class="fa-solid fa-eraser"></i>
+                                </button>
+                            </div>
+                            
+                            <textarea id="transcript" 
+                                      class="live-transcript w-full px-4 py-3 border border-stone-200 rounded-2xl text-base resize-y focus:outline-none focus:border-emerald-400 bg-white"
+                                      placeholder="Your transcribed words will appear here in real time. Edit anytime."></textarea>
+                            
+                            <div class="flex items-center justify-between mt-2 px-1">
+                                <div id="recognition-status" class="text-xs text-blue-700 font-medium flex items-center gap-x-1.5 hidden">
+                                    <i class="fa-solid fa-circle fa-beat text-[8px]"></i>
+                                    <span>Listening...</span>
+                                </div>
+                                <div class="text-[10px] text-stone-400">Tip: Speak in short clear sentences • Pause naturally</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photo Capture -->
+                    <div>
+                        <label class="field-label block mb-1.5">Photo (optional but powerful)</label>
+                        
+                        <div id="photo-section" class="border border-stone-200 rounded-3xl p-4 bg-stone-50">
+                            <div id="photo-placeholder" class="flex flex-col items-center justify-center py-8 text-center">
+                                <i class="fa-solid fa-camera text-4xl text-stone-300 mb-3"></i>
+                                <p class="text-sm text-stone-500 mb-4">Capture tree condition, fruit, damage, or labels</p>
+                                
+                                <div class="flex gap-x-3">
+                                    <button onclick="startCameraCapture()"
+                                            class="flex items-center gap-x-2 px-5 py-2.5 bg-white border border-stone-300 hover:bg-blue-50 rounded-2xl text-sm font-semibold transition-colors">
+                                        <i class="fa-solid fa-camera"></i>
+                                        <span>Take Photo</span>
+                                    </button>
+                                    <label class="flex items-center gap-x-2 px-5 py-2.5 bg-white border border-stone-300 hover:bg-blue-50 rounded-2xl text-sm font-semibold cursor-pointer transition-colors">
+                                        <i class="fa-solid fa-upload"></i>
+                                        <span>Upload</span>
+                                        <input type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Photo Preview -->
+                            <div id="photo-preview-container" class="hidden">
+                                <div class="relative">
+                                    <img id="photo-preview" class="photo-preview w-full max-h-[280px] mx-auto border border-stone-200 rounded-2xl" alt="Captured photo">
+                                    <button onclick="removePhoto()" 
+                                            class="absolute top-3 right-3 bg-white/90 hover:bg-white text-red-600 shadow px-3 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-x-1.5">
+                                        <i class="fa-solid fa-times"></i>
+                                        <span>Remove</span>
+                                    </button>
+                                </div>
+                                <p class="text-center text-xs text-stone-500 mt-2">Photo will be stored locally (resized for efficiency)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div>
+                        <label class="field-label block mb-1.5">Additional Notes (optional)</label>
+                        <textarea id="additional-notes" rows="2" 
+                                  class="w-full px-4 py-3 border border-stone-300 rounded-2xl text-sm focus:outline-none focus:border-blue-500"
+                                  placeholder="Any extra context, measurements, or follow-up actions..."></textarea>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="pt-2">
+                        <button onclick="saveEntry()"
+                                class="w-full flex items-center justify-center gap-x-3 py-4 bg-blue-800 hover:bg-blue-900 active:bg-blue-950 text-white font-bold text-lg rounded-3xl shadow-sm transition-all">
+                            <i class="fa-solid fa-save"></i>
+                            <span>SAVE TO SECOND BRAIN</span>
+                        </button>
+                        <p class="text-center text-[10px] text-stone-400 mt-2">Stored privately on this device • Works completely offline</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard-page" class="page hidden">
+            <div class="mb-6">
+                <h1 class="text-3xl font-semibold tracking-tight">Knowledge Overview</h1>
+                <p class="text-stone-600">Your farm's living memory at a glance</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="metric-card border border-stone-200 rounded-3xl p-5">
+                    <div class="text-blue-700 text-xs font-bold tracking-widest">TOTAL ENTRIES</div>
+                    <div id="stat-total" class="text-5xl font-semibold tabular-nums mt-1 text-emerald-800">0</div>
+                    <div class="text-xs text-stone-500 mt-1">captured insights</div>
+                </div>
+                <div class="metric-card border border-stone-200 rounded-3xl p-5">
+                    <div class="text-blue-700 text-xs font-bold tracking-widest">THIS WEEK</div>
+                    <div id="stat-week" class="text-5xl font-semibold tabular-nums mt-1 text-emerald-800">0</div>
+                    <div class="text-xs text-stone-500 mt-1">new observations</div>
+                </div>
+                <div class="metric-card border border-stone-200 rounded-3xl p-5">
+                    <div class="text-blue-700 text-xs font-bold tracking-widest">WITH PHOTOS</div>
+                    <div id="stat-photos" class="text-5xl font-semibold tabular-nums mt-1 text-emerald-800">0</div>
+                    <div class="text-xs text-stone-500 mt-1">visual records</div>
+                </div>
+                <div class="metric-card border border-stone-200 rounded-3xl p-5">
+                    <div class="text-blue-700 text-xs font-bold tracking-widest">CATEGORIES USED</div>
+                    <div id="stat-categories" class="text-5xl font-semibold tabular-nums mt-1 text-emerald-800">0</div>
+                    <div class="text-xs text-stone-500 mt-1">different sections</div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="bg-white border border-stone-200 rounded-3xl p-6 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="section-header">Breakdown by Section</div>
+                    <button onclick="showPage('entries-page')" class="text-xs font-semibold text-blue-700 hover:text-blue-800 flex items-center gap-x-1">
+                        VIEW ALL <i class="fa-solid fa-arrow-right text-xs ml-1"></i>
+                    </button>
+                </div>
+                
+                <div id="category-breakdown" class="space-y-3 text-sm">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Recent Entries -->
+            <div class="bg-white border border-stone-200 rounded-3xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="section-header">Recent Captures</div>
+                    <button onclick="showPage('entries-page')" class="text-xs font-semibold text-blue-700 hover:text-blue-800">See all →</button>
+                </div>
+                <div id="recent-entries" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL ENTRIES PAGE -->
+        <div id="entries-page" class="page hidden">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-3 mb-5">
+                <div>
+                    <h1 class="text-3xl font-semibold tracking-tight">All Knowledge Entries</h1>
+                    <p id="entries-count" class="text-stone-600">0 entries • Your farm's collective intelligence</p>
+                </div>
+                
+                <div class="flex gap-x-2">
+                    <div class="relative flex-1 md:w-72">
+                        <input id="search-input" type="text" onkeyup="filterEntries()" placeholder="Search transcripts, notes or blocks..."
+                               class="w-full pl-10 pr-4 py-3 text-sm border border-stone-300 rounded-3xl focus:outline-none focus:border-blue-500">
+                        <i class="fa-solid fa-search absolute left-4 top-4 text-stone-400"></i>
+                    </div>
+                    
+                    <select id="filter-category" onchange="filterEntries()" 
+                            class="px-4 py-3 text-sm border border-stone-300 rounded-3xl focus:outline-none focus:border-blue-500 bg-white">
+                        <option value="">All Sections</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div id="entries-list" class="space-y-3">
+                <!-- Populated by JS -->
+            </div>
+            
+            <div id="no-entries" class="hidden text-center py-12 bg-white border border-dashed border-stone-300 rounded-3xl">
+                <i class="fa-solid fa-inbox text-5xl text-stone-300 mb-4"></i>
+                <p class="font-medium text-stone-500">No entries yet. Start capturing on the Capture tab.</p>
+            </div>
+        </div>
+
+        <!-- EXPORT PAGE -->
+        <div id="export-page" class="page hidden max-w-xl mx-auto">
+            <div class="mb-6">
+                <h1 class="text-3xl font-semibold tracking-tight">Export &amp; Backup</h1>
+                <p class="text-stone-600">Keep your second brain safe. Export for analysis or to move to another device.</p>
+            </div>
+
+            <div class="bg-white border border-stone-200 rounded-3xl p-6 space-y-5">
+                <div>
+                    <div class="font-semibold mb-2 flex items-center gap-x-2">
+                        <i class="fa-solid fa-file-export text-blue-700"></i>
+                        <span>Full Backup (Recommended)</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-3">Complete JSON file with all entries, photos (base64) and metadata. Use this to restore or migrate.</p>
+                    <button onclick="exportJSON()" 
+                            class="w-full py-3.5 bg-blue-800 hover:bg-blue-900 text-white font-semibold rounded-2xl flex items-center justify-center gap-x-2 transition-colors">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download Full JSON Backup</span>
+                    </button>
+                </div>
+                
+                <div class="border-t pt-5">
+                    <div class="font-semibold mb-2 flex items-center gap-x-2">
+                        <i class="fa-solid fa-file-csv text-blue-700"></i>
+                        <span>Spreadsheet Export (CSV)</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-3">Flat table format perfect for Excel, Google Sheets or further analysis. Photos not included.</p>
+                    <button onclick="exportCSV()" 
+                            class="w-full py-3.5 border border-blue-700 text-blue-700 hover:bg-blue-50 font-semibold rounded-2xl flex items-center justify-center gap-x-2 transition-colors">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download CSV for Analysis</span>
+                    </button>
+                </div>
+                
+                <div class="border-t pt-5">
+                    <div class="font-semibold mb-2 flex items-center gap-x-2 text-amber-700">
+                        <i class="fa-solid fa-upload"></i>
+                        <span>Restore from Backup</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-3">Upload a previous JSON backup. This will <strong>replace</strong> all current entries.</p>
+                    
+                    <label class="block">
+                        <div class="w-full py-3.5 border border-dashed border-amber-300 hover:border-amber-400 text-amber-700 font-semibold rounded-2xl flex items-center justify-center gap-x-2 cursor-pointer transition-colors">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <span>Choose JSON Backup File</span>
+                        </div>
+                        <input type="file" accept=".json" class="hidden" onchange="importJSON(event)">
+                    </label>
+                </div>
+
+                <!-- Bulk Photo Import -->
+                <div class="border-t pt-5 mt-2">
+                    <div class="font-semibold mb-2 flex items-center gap-x-2 text-emerald-700">
+                        <i class="fa-solid fa-images"></i>
+                        <span>Import existing photos from your phone</span>
+                    </div>
+                    <p class="text-sm text-stone-600 mb-3">Quickly bring in older photos from your gallery or previous notes. Each photo becomes its own entry you can edit later.</p>
+                    
+                    <label class="block">
+                        <div class="w-full py-3.5 border border-dashed border-emerald-300 hover:border-emerald-400 text-emerald-700 font-semibold rounded-2xl flex items-center justify-center gap-x-2 cursor-pointer transition-colors">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <span>Select multiple photos to import</span>
+                        </div>
+                        <input type="file" accept="image/*" multiple class="hidden" onchange="importBulkPhotos(event)">
+                    </label>
+                    <p class="text-[10px] text-stone-400 mt-2 px-1">Tip: After import, open each new entry and add voice notes, block name, or use the translate button.</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-xs text-center text-stone-400 px-4">
+                Data stays on your device only. Export regularly, especially before clearing browser data or switching phones.
+            </div>
+        </div>
+    </main>
+
+    <!-- Entry Detail Modal -->
+    <div id="entry-modal" onclick="if (event.target.id === 'entry-modal') closeModal()" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end md:items-center justify-center p-0 md:p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="bg-white w-full md:w-[520px] md:rounded-3xl md:m-4 rounded-t-3xl max-h-[92vh] overflow-hidden flex flex-col shadow-xl">
+            
+            <!-- Modal Header -->
+            <div class="px-5 pt-4 pb-3 border-b flex items-center justify-between bg-stone-50">
+                <div>
+                    <span id="modal-date" class="text-xs font-mono text-stone-500"></span>
+                    <div id="modal-category" class="font-semibold text-emerald-800"></div>
+                </div>
+                <button onclick="closeModal()" class="text-2xl leading-none text-stone-400 hover:text-stone-600 px-2">&times;</button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto flex-1 space-y-5 text-sm" style="max-height: calc(92vh - 140px)">
+                
+                <!-- Block -->
+                <div>
+                    <div class="text-xs uppercase tracking-widest text-stone-500 mb-0.5">Block / Location</div>
+                    <div id="modal-block" class="font-medium text-lg"></div>
+                </div>
+                
+                <!-- Transcript -->
+                <div>
+                    <div class="text-xs uppercase tracking-widest text-stone-500 mb-1">Voice Transcript / Notes</div>
+                    <div id="modal-transcript" class="bg-stone-50 border border-stone-100 p-4 rounded-2xl whitespace-pre-wrap text-[15px] leading-relaxed"></div>
+                </div>
+                
+                <!-- Additional Notes -->
+                <div id="modal-additional-container">
+                    <div class="text-xs uppercase tracking-widest text-stone-500 mb-1">Additional Context</div>
+                    <div id="modal-additional" class="bg-white border p-4 rounded-2xl whitespace-pre-wrap"></div>
+                </div>
+
+                <!-- GPS Location -->
+                <div id="modal-gps-container" class="hidden">
+                    <div class="text-xs uppercase tracking-widest text-stone-500 mb-0.5">Location captured</div>
+                    <div class="flex items-center gap-x-2">
+                        <span id="modal-gps" class="font-mono text-sm text-emerald-700"></span>
+                        <button onclick="openInMaps()" 
+                                class="text-xs px-3 py-1 bg-blue-100 hover:bg-emerald-200 text-emerald-700 rounded-2xl font-medium flex items-center gap-x-1 transition-colors">
+                            <i class="fa-solid fa-map-marked fa-sm"></i>
+                            <span>Open in Maps</span>
+                        </button>
+                    </div>
+                    <div id="modal-gps-time" class="text-[10px] text-stone-400 mt-0.5"></div>
+                </div>
+                
+                <!-- Photo -->
+                <div id="modal-photo-container" class="hidden">
+                    <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">Photo</div>
+                    <img id="modal-photo" class="w-full rounded-2xl border shadow-sm cursor-pointer" onclick="window.open(this.src, '_blank')" alt="Entry photo">
+                    <p class="text-[10px] text-center text-stone-400 mt-1">Tap photo to view full size</p>
+                </div>
+
+                <!-- Translation/AI features removed per request. All inputs expected in South African English. Voice-to-text only. -->
+            </div>
+            
+            <!-- Modal Actions -->
+            <div class="p-4 border-t bg-stone-50 flex gap-x-3">
+                <button onclick="editCurrentEntry()" 
+                        class="flex-1 py-3 text-sm font-semibold border border-emerald-700 text-emerald-700 rounded-2xl hover:bg-blue-50 transition-colors flex items-center justify-center gap-x-2">
+                    <i class="fa-solid fa-edit"></i>
+                    <span>Edit</span>
+                </button>
+                <button onclick="deleteCurrentEntry()" 
+                        class="flex-1 py-3 text-sm font-semibold border border-red-200 text-red-600 rounded-2xl hover:bg-red-50 transition-colors flex items-center justify-center gap-x-2">
+                    <i class="fa-solid fa-trash"></i>
+                    <span>Delete</span>
+                </button>
+                <button onclick="closeModal()" 
+                        class="flex-1 py-3 text-sm font-semibold bg-emerald-700 text-white rounded-2xl hover:bg-emerald-800 transition-colors">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="camera-modal" onclick="if (event.target.id === 'camera-modal') stopCamera()" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="p-4 border-b flex items-center justify-between">
+                <div class="font-semibold">Take Photo</div>
+                <button onclick="stopCamera()" class="text-xl px-2 text-stone-400 hover:text-stone-600">&times;</button>
+            </div>
+            
+            <div class="p-4">
+                <video id="camera-video" autoplay playsinline class="w-full rounded-2xl bg-black aspect-video object-cover"></video>
+                <canvas id="camera-canvas" class="hidden"></canvas>
+            </div>
+            
+            <div class="p-4 flex gap-x-3 border-t">
+                <button onclick="stopCamera()" 
+                        class="flex-1 py-3 text-sm font-medium border rounded-2xl">Cancel</button>
+                <button onclick="captureFromCamera()" 
+                        class="flex-1 py-3 text-sm font-semibold bg-emerald-700 text-white rounded-2xl">Capture Photo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[300] space-y-2"></div>
+
+    <script>
+        // Tailwind script
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent', '#166534');
+        }
+
+        // Global state
+        let entries = [];
+        let currentEntryId = null;
+        let editingEntryId = null;
+        let currentPhotoData = null;
+        let recognition = null;
+        let isRecognizing = false;
+        let cameraStream = null;
+
+        const STORAGE_KEY = 'litchiSecondBrainEntries_v1';
+
+        // Predefined categories (must match select options)
+        const PREDEFINED_CATEGORIES = [
+            "Crop Health & Pests",
+            "Fruit Development & Ripening",
+            "Harvest Observations",
+            "Weather & Climate Impact",
+            "Worker & Team Notes",
+            "Equipment & Maintenance",
+            "Block Maintenance",
+            "Quality & Post-Harvest",
+            "Safety & Incidents",
+            "Ideas & Improvements",
+            "General Observations"
+        ];
+
+        function loadEntries() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    entries = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Failed to parse saved entries", e);
+                    entries = [];
+                }
+            } else {
+                // Seed with 2 demo entries on first run
+                entries = [
+                    {
+                        id: Date.now() - 86400000 * 2,
+                        timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
+                        category: "Crop Health & Pests",
+                        block: "Block 3 South",
+                        transcript: "Noticed quite a few stink bugs on the young fruit in the southern section. Some fruit already showing damage. Need to check with the team if we should spray soon. Weather has been warm and humid which might be encouraging them.",
+                        photo: null,
+                        additionalNotes: "Stink bug pressure seems higher than last season. Monitor daily.",
+                        location: null
+                    },
+                    {
+                        id: Date.now() - 86400000,
+                        timestamp: new Date(Date.now() - 86400000).toISOString(),
+                        category: "Harvest Observations",
+                        block: "Block 1 Main",
+                        transcript: "Harvested 42 crates from Block 1 today. Fruit size is good but some variation in colour. Workers were efficient. One crate had a few over-ripe ones that we sorted out.",
+                        photo: null,
+                        additionalNotes: "Average 18.4 kg per crate. Good quality overall.",
+                        location: null
+                    }
+                ];
+                saveEntries();
+            }
+        }
+
+        function saveEntries() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+        }
+
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            
+            // Show target
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            // Update active tab styling
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active', 'bg-emerald-700', 'text-white');
+                tab.classList.add('text-stone-600');
+            });
+            
+            const tabMap = {
+                'capture-page': 'tab-capture',
+                'dashboard-page': 'tab-dashboard',
+                'entries-page': 'tab-entries',
+                'export-page': 'tab-export'
+            };
+            
+            const activeTab = document.getElementById(tabMap[pageId]);
+            if (activeTab) {
+                activeTab.classList.add('active', 'bg-emerald-700', 'text-white');
+                activeTab.classList.remove('text-stone-600');
+            }
+            
+            // Refresh content when switching
+            if (pageId === 'dashboard-page') {
+                updateDashboard();
+            }
+            if (pageId === 'entries-page') {
+                renderEntriesList();
+                populateCategoryFilter();
+            }
+        }
+
+        function updateSTTLanguage() {
+            // Language is read fresh each time recognition starts
+            showToast("Language updated. Start a new recording to use it.", "info");
+        }
+
+        function toggleVoiceRecognition() {
+            const btn = document.getElementById('mic-btn');
+            const icon = document.getElementById('mic-icon');
+            const text = document.getElementById('mic-text');
+            const status = document.getElementById('recognition-status');
+            const textarea = document.getElementById('transcript');
+
+            if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+                showToast("Speech recognition not supported in this browser. Try Chrome or Edge.", "error");
+                return;
+            }
+
+            if (isRecognizing) {
+                // Stop
+                if (recognition) {
+                    recognition.stop();
+                }
+                isRecognizing = false;
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-blue-800', 'hover:bg-blue-900');
+                icon.classList.remove('fa-stop');
+                icon.classList.add('fa-microphone');
+                text.textContent = 'Start Recording & Transcribe';
+                status.classList.add('hidden');
+                triggerHaptic(30);
+            } else {
+                // Start
+                try {
+                    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    recognition = new SpeechRec();
+                    
+                    const lang = document.getElementById('stt-lang').value;
+                    recognition.lang = lang;
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+
+                    let finalTranscript = textarea.value.trim();
+
+                    recognition.onresult = (event) => {
+                        let interim = '';
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            const transcriptPart = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                finalTranscript += ' ' + transcriptPart;
+                            } else {
+                                interim = transcriptPart;
+                            }
+                        }
+                        textarea.value = (finalTranscript + ' ' + interim).trim();
+                    };
+
+                    recognition.onerror = (event) => {
+                        console.error('Speech recognition error', event);
+                        let msg = "Recognition error. ";
+                        if (event.error === 'no-speech') msg += "No speech detected. Try again.";
+                        else if (event.error === 'audio-capture') msg += "Microphone problem.";
+                        else if (event.error === 'not-allowed') msg += "Microphone permission denied.";
+                        else msg += event.error;
+                        showToast(msg, "error");
+                        stopRecognition();
+                    };
+
+                    recognition.onend = () => {
+                        if (isRecognizing) {
+                            // Auto-restart if still in recognizing mode (some browsers stop)
+                            try {
+                                recognition.start();
+                            } catch(e) {}
+                        } else {
+                            stopRecognition();
+                        }
+                    };
+
+                    recognition.start();
+                    isRecognizing = true;
+                    
+                    // UI update
+                    btn.classList.remove('bg-emerald-700', 'hover:bg-emerald-800');
+                    btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    icon.classList.remove('fa-microphone');
+                    icon.classList.add('fa-stop');
+                    text.textContent = 'Stop & Finish';
+                    status.classList.remove('hidden');
+
+                    if (!textarea.value.trim()) {
+                        textarea.placeholder = "Listening... speak now";
+                    }
+                    
+                } catch (err) {
+                    console.error(err);
+                    showToast("Could not start voice recognition. Check browser permissions.", "error");
+                }
+            }
+        }
+
+        function stopRecognition() {
+            const btn = document.getElementById('mic-btn');
+            const icon = document.getElementById('mic-icon');
+            const text = document.getElementById('mic-text');
+            const status = document.getElementById('recognition-status');
+            const textarea = document.getElementById('transcript');
+
+            isRecognizing = false;
+            if (recognition) {
+                try { recognition.stop(); } catch(e) {}
+            }
+            
+            btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            btn.classList.add('bg-emerald-700', 'hover:bg-emerald-800');
+            icon.classList.remove('fa-stop');
+            icon.classList.add('fa-microphone');
+            text.textContent = 'Start Recording & Transcribe';
+            status.classList.add('hidden');
+            
+            if (textarea.value.trim()) {
+                textarea.placeholder = "Edit your transcribed note here if needed...";
+            }
+        }
+
+        function clearVoice() {
+            document.getElementById('transcript').value = '';
+            if (isRecognizing) {
+                stopRecognition();
+            }
+        }
+
+        function useCustomCategory() {
+            const select = document.getElementById('category-select');
+            const current = select.value;
+            const custom = prompt("Enter a custom section name:", current || "Custom Observation");
+            if (custom && custom.trim()) {
+                // Add as option if not exists
+                let exists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value.toLowerCase() === custom.trim().toLowerCase()) {
+                        exists = true;
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = custom.trim();
+                    opt.textContent = custom.trim();
+                    select.appendChild(opt);
+                    select.value = custom.trim();
+                }
+            }
+        }
+
+        async function startCameraCapture() {
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-video');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                video.srcObject = cameraStream;
+            } catch (err) {
+                console.error(err);
+                showToast("Could not access camera. Please check permissions or try uploading a photo instead.", "error");
+                stopCamera();
+            }
+        }
+
+        function stopCamera() {
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-video');
+            
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            video.srcObject = null;
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function captureFromCamera() {
+            const video = document.getElementById('camera-video');
+            const canvas = document.getElementById('camera-canvas');
+            
+            if (!video.videoWidth) {
+                showToast("Camera not ready yet.", "error");
+                return;
+            }
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Resize for storage efficiency
+            const resizedCanvas = resizeCanvas(canvas, 1024);
+            currentPhotoData = resizedCanvas.toDataURL('image/jpeg', 0.78);
+
+            // Show preview
+            showPhotoPreview(currentPhotoData);
+            triggerHaptic(40);
+            stopCamera();
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showToast("Please select an image file.", "error");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Resize
+                    const canvas = document.createElement('canvas');
+                    const maxW = 1024;
+                    let w = img.width;
+                    let h = img.height;
+                    
+                    if (w > maxW) {
+                        h = Math.round(h * (maxW / w));
+                        w = maxW;
+                    }
+                    
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    
+                    currentPhotoData = canvas.toDataURL('image/jpeg', 0.78);
+                    showPhotoPreview(currentPhotoData);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            // Reset input
+            event.target.value = '';
+        }
+
+        function resizeCanvas(sourceCanvas, maxWidth = 1024) {
+            let width = sourceCanvas.width;
+            let height = sourceCanvas.height;
+            
+            if (width > maxWidth) {
+                height = Math.round(height * (maxWidth / width));
+                width = maxWidth;
+            }
+            
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = width;
+            outCanvas.height = height;
+            const ctx = outCanvas.getContext('2d');
+            ctx.drawImage(sourceCanvas, 0, 0, width, height);
+            return outCanvas;
+        }
+
+        function showPhotoPreview(dataUrl) {
+            const placeholder = document.getElementById('photo-placeholder');
+            const container = document.getElementById('photo-preview-container');
+            const previewImg = document.getElementById('photo-preview');
+            
+            previewImg.src = dataUrl;
+            placeholder.classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+
+        function removePhoto() {
+            const placeholder = document.getElementById('photo-placeholder');
+            const container = document.getElementById('photo-preview-container');
+            const previewImg = document.getElementById('photo-preview');
+            
+            currentPhotoData = null;
+            previewImg.src = '';
+            container.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+        }
+
+        function saveEntry() {
+            const transcript = document.getElementById('transcript').value.trim();
+            const additional = document.getElementById('additional-notes').value.trim();
+            const category = document.getElementById('category-select').value;
+            const block = document.getElementById('block-input').value.trim();
+
+            if (!transcript && !additional && !currentPhotoData) {
+                showToast("Please add a voice note, text, or photo before saving.", "error");
+                return;
+            }
+
+            const attachGPS = document.getElementById('gps-toggle').checked;
+
+            const newEntry = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                category: category,
+                block: block || "Not specified",
+                transcript: transcript || "(No voice transcript)",
+                photo: currentPhotoData,
+                additionalNotes: additional || "",
+                location: null,
+                gps: null                 // {lat, lng, capturedAt}
+            };
+
+            entries.unshift(newEntry);
+            saveEntries();
+
+            // GPS capture if toggled on (best-effort, non-blocking)
+            if (attachGPS && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const gpsInfo = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            capturedAt: new Date().toISOString()
+                        };
+                        // Update the entry we just saved
+                        const savedEntry = entries.find(e => e.id === newEntry.id);
+                        if (savedEntry) {
+                            savedEntry.gps = gpsInfo;
+                            saveEntries();
+                        }
+                    },
+                    (err) => {
+                        console.log("GPS not captured:", err.message);
+                    },
+                    { enableHighAccuracy: false, timeout: 8000, maximumAge: 30000 }
+                );
+            }
+
+            // Reset form
+            document.getElementById('transcript').value = '';
+            document.getElementById('additional-notes').value = '';
+            document.getElementById('block-input').value = '';
+            currentPhotoData = null;
+            
+            const placeholder = document.getElementById('photo-placeholder');
+            const container = document.getElementById('photo-preview-container');
+            placeholder.classList.remove('hidden');
+            container.classList.add('hidden');
+
+            showToast("Entry saved successfully to your Second Brain!", "success");
+            triggerHaptic(50);
+
+            // Optionally switch to dashboard or entries
+            setTimeout(() => {
+                showPage('dashboard-page');
+            }, 1200);
+        }
+
+        function updateDashboard() {
+            // Total
+            document.getElementById('stat-total').textContent = entries.length;
+
+            // This week
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            const weekCount = entries.filter(e => new Date(e.timestamp) > oneWeekAgo).length;
+            document.getElementById('stat-week').textContent = weekCount;
+
+            // With photos
+            const photoCount = entries.filter(e => e.photo).length;
+            document.getElementById('stat-photos').textContent = photoCount;
+
+            // Categories used
+            const uniqueCats = new Set(entries.map(e => e.category));
+            document.getElementById('stat-categories').textContent = uniqueCats.size;
+
+            // Category breakdown
+            renderCategoryBreakdown();
+
+            // Recent entries
+            renderRecentEntries();
+        }
+
+        function renderCategoryBreakdown() {
+            const container = document.getElementById('category-breakdown');
+            container.innerHTML = '';
+
+            const counts = {};
+            entries.forEach(e => {
+                counts[e.category] = (counts[e.category] || 0) + 1;
+            });
+
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+            if (sorted.length === 0) {
+                container.innerHTML = `<div class="text-sm text-stone-400 py-4 text-center">No entries yet. Start capturing!</div>`;
+                return;
+            }
+
+            sorted.forEach(([cat, count]) => {
+                const pct = entries.length > 0 ? Math.round((count / entries.length) * 100) : 0;
+                
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between gap-x-3 px-1 py-1 cursor-pointer hover:bg-stone-50 rounded-xl px-3`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-x-3 flex-1 min-w-0">
+                        <div class="w-2.5 h-2.5 rounded-full bg-blue-700 flex-shrink-0"></div>
+                        <div class="font-medium text-sm truncate">${cat}</div>
+                    </div>
+                    <div class="flex items-center gap-x-3 flex-shrink-0">
+                        <div class="text-xs tabular-nums font-mono text-emerald-700 w-8 text-right">${count}</div>
+                        <div class="w-16 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                            <div class="h-1.5 bg-blue-700 rounded-full transition-all" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+                div.onclick = () => {
+                    showPage('entries-page');
+                    setTimeout(() => {
+                        document.getElementById('filter-category').value = cat;
+                        filterEntries();
+                    }, 50);
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function renderRecentEntries() {
+            const container = document.getElementById('recent-entries');
+            container.innerHTML = '';
+
+            const recent = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 4);
+
+            if (recent.length === 0) {
+                container.innerHTML = `<div class="text-sm text-stone-400 py-6 text-center">No entries captured yet.</div>`;
+                return;
+            }
+
+            recent.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = `entry-card flex gap-x-3 p-3 border border-stone-100 hover:border-emerald-200 bg-white rounded-2xl cursor-pointer`;
+                
+                const date = new Date(entry.timestamp);
+                const dateStr = date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
+                
+                let html = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-x-2 mb-1">
+                            <span class="category-chip bg-blue-100 text-emerald-700">${entry.category}</span>
+                            <span class="text-xs text-stone-400 font-mono">${dateStr}</span>
+                        </div>
+                        <div class="text-sm font-medium line-clamp-2 text-stone-700">${entry.transcript.substring(0, 110)}${entry.transcript.length > 110 ? '...' : ''}</div>
+                        ${entry.block ? `<div class="text-xs text-blue-700 mt-1 flex items-center gap-x-1"><i class="fa-solid fa-map-marker-alt fa-xs"></i> <span>${entry.block}</span></div>` : ''}
+                    </div>
+                `;
+                
+                if (entry.photo) {
+                    html += `<div class="w-14 h-14 flex-shrink-0"><img src="${entry.photo}" class="w-full h-full object-cover rounded-xl border border-stone-100" alt=""></div>`;
+                }
+                
+                div.innerHTML = html;
+                div.onclick = () => editEntry(entry.id);
+                container.appendChild(div);
+            });
+        }
+
+        function populateCategoryFilter() {
+            const select = document.getElementById('filter-category');
+            // Keep the "All Sections" option
+            const currentVal = select.value;
+            
+            // Remove old dynamic options
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            const cats = new Set(entries.map(e => e.category));
+            [...cats].sort().forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+            
+            if (currentVal && [...cats].includes(currentVal)) {
+                select.value = currentVal;
+            }
+        }
+
+        function renderEntriesList(filteredEntries = null) {
+            const container = document.getElementById('entries-list');
+            const noEntries = document.getElementById('no-entries');
+            container.innerHTML = '';
+            
+            let toShow = filteredEntries || entries;
+            
+            // Sort newest first
+            toShow = [...toShow].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            document.getElementById('entries-count').textContent = `${toShow.length} entries • Your farm's collective intelligence`;
+
+            if (toShow.length === 0) {
+                noEntries.classList.remove('hidden');
+                return;
+            } else {
+                noEntries.classList.add('hidden');
+            }
+
+            toShow.forEach(entry => {
+                const card = document.createElement('div');
+                card.className = `entry-card bg-white border border-stone-200 rounded-3xl p-4 flex gap-4 cursor-pointer hover:border-emerald-300`;
+                
+                const date = new Date(entry.timestamp);
+                const dateStr = date.toLocaleDateString('en-ZA', { 
+                    weekday: 'short', month: 'short', day: 'numeric', 
+                    hour: '2-digit', minute: '2-digit' 
+                }).replace(',', ' •');
+
+                let photoHtml = '';
+                if (entry.photo) {
+                    photoHtml = `<div class="w-20 h-20 flex-shrink-0"><img src="${entry.photo}" class="w-full h-full object-cover rounded-2xl border" alt="Photo"></div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-x-2">
+                            <div>
+                                <span class="category-chip bg-blue-100 text-emerald-700">${entry.category}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-stone-400 font-mono whitespace-nowrap">${dateStr}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2 text-sm font-medium text-stone-700 line-clamp-3">${entry.transcript}</div>
+                        
+                        ${entry.block ? `
+                        <div class="mt-2 flex items-center text-xs text-blue-700">
+                            <i class="fa-solid fa-map-marker-alt mr-1.5"></i>
+                            <span class="font-medium">${entry.block}</span>
+                        </div>` : ''}
+                        
+                        ${entry.additionalNotes ? `
+                        <div class="mt-1.5 text-xs text-stone-500 line-clamp-1 italic">"${entry.additionalNotes}"</div>` : ''}
+                    </div>
+                    
+                    ${photoHtml}
+                `;
+                
+                card.onclick = () => editEntry(entry.id);
+                container.appendChild(card);
+            });
+        }
+
+        function filterEntries() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const catFilter = document.getElementById('filter-category').value;
+
+            let filtered = entries;
+
+            if (catFilter) {
+                filtered = filtered.filter(e => e.category === catFilter);
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(e => 
+                    (e.transcript && e.transcript.toLowerCase().includes(searchTerm)) ||
+                    (e.additionalNotes && e.additionalNotes.toLowerCase().includes(searchTerm)) ||
+                    (e.block && e.block.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            renderEntriesList(filtered);
+        }
+
+        function showEntryModal(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (!entry) return;
+
+            currentEntryId = entryId;
+
+            document.getElementById('modal-date').textContent = new Date(entry.timestamp).toLocaleString('en-ZA', {
+                dateStyle: 'full', timeStyle: 'short'
+            });
+            document.getElementById('modal-category').innerHTML = `<span class="category-chip bg-blue-100 text-emerald-700">${entry.category}</span>`;
+            document.getElementById('modal-block').textContent = entry.block || 'Not specified';
+            document.getElementById('modal-transcript').textContent = entry.transcript || '(No transcript)';
+
+            const addContainer = document.getElementById('modal-additional-container');
+            const addEl = document.getElementById('modal-additional');
+            
+            if (entry.additionalNotes && entry.additionalNotes.trim()) {
+                addEl.textContent = entry.additionalNotes;
+                addContainer.style.display = 'block';
+            } else {
+                addContainer.style.display = 'none';
+            }
+
+            // English Version
+            const engContainer = document.getElementById('modal-english-container');
+            const engEl = document.getElementById('modal-english');
+            if (entry.englishVersion && entry.englishVersion.trim()) {
+                engEl.textContent = entry.englishVersion;
+                engContainer.classList.remove('hidden');
+            } else {
+                engContainer.classList.add('hidden');
+            }
+
+            // Professional Summary
+            const sumContainer = document.getElementById('modal-summary-container');
+            const sumEl = document.getElementById('modal-summary');
+            if (entry.summary && entry.summary.trim()) {
+                sumEl.textContent = entry.summary;
+                sumContainer.classList.remove('hidden');
+            } else {
+                sumContainer.classList.add('hidden');
+            }
+
+            const photoContainer = document.getElementById('modal-photo-container');
+            const photoEl = document.getElementById('modal-photo');
+            
+            if (entry.photo) {
+                photoEl.src = entry.photo;
+                photoContainer.classList.remove('hidden');
+            } else {
+                photoContainer.classList.add('hidden');
+            }
+
+            // GPS
+            const gpsContainer = document.getElementById('modal-gps-container');
+            const gpsEl = document.getElementById('modal-gps');
+            const gpsTimeEl = document.getElementById('modal-gps-time');
+            
+            if (entry.gps && entry.gps.lat && entry.gps.lng) {
+                gpsEl.textContent = `${entry.gps.lat.toFixed(5)}, ${entry.gps.lng.toFixed(5)}`;
+                if (entry.gps.capturedAt) {
+                    const gpsDate = new Date(entry.gps.capturedAt);
+                    gpsTimeEl.textContent = `Captured ${gpsDate.toLocaleTimeString('en-ZA', {hour:'2-digit', minute:'2-digit'})}`;
+                } else {
+                    gpsTimeEl.textContent = '';
+                }
+                gpsContainer.classList.remove('hidden');
+            } else {
+                gpsContainer.classList.add('hidden');
+            }
+
+            document.getElementById('entry-modal').classList.remove('hidden');
+            document.getElementById('entry-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('entry-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            currentEntryId = null;
+        }
+
+        // Translation / AI summary features removed. Focus is now pure voice-to-text in South African English + GPS + photo import.
+
+        function openInMaps() {
+            if (!currentEntryId) return;
+            const entry = entries.find(e => e.id === currentEntryId);
+            if (!entry || !entry.gps) return;
+
+            const { lat, lng } = entry.gps;
+            const url = `https://www.google.com/maps?q=${lat},${lng}&z=17`;
+            window.open(url, '_blank');
+        }
+
+        function triggerHaptic(intensity = 40) {
+            try {
+                if (navigator.vibrate) {
+                    navigator.vibrate(intensity);
+                }
+            } catch (e) {}
+        }
+
+        function editEntry(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (!entry) return;
+
+            editingEntryId = entryId;
+            currentEntryId = entryId; // for compatibility
+
+            // Close modal if open
+            const modal = document.getElementById('entry-modal');
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+
+            // Switch to capture page
+            showPage('capture-page');
+
+            // Prefill all fields
+            document.getElementById('category-select').value = entry.category;
+            document.getElementById('block-input').value = entry.block || '';
+            document.getElementById('transcript').value = entry.transcript || '';
+            document.getElementById('additional-notes').value = entry.additionalNotes || '';
+
+            if (entry.photo) {
+                currentPhotoData = entry.photo;
+                const placeholder = document.getElementById('photo-placeholder');
+                const container = document.getElementById('photo-preview-container');
+                const preview = document.getElementById('photo-preview');
+                preview.src = entry.photo;
+                placeholder.classList.add('hidden');
+                container.classList.remove('hidden');
+            } else {
+                currentPhotoData = null;
+            }
+
+            // Hide the original save button and create three equal action buttons
+            const originalSaveBtn = document.querySelector('#capture-page button[onclick="saveEntry()"]');
+            if (originalSaveBtn) {
+                originalSaveBtn.style.display = 'none';
+
+                const originalOnClick = originalSaveBtn.onclick;
+                const originalHTML = originalSaveBtn.innerHTML;
+
+                // Create a container for the three equal buttons
+                let actionsContainer = document.getElementById('edit-actions');
+                if (!actionsContainer) {
+                    actionsContainer = document.createElement('div');
+                    actionsContainer.id = 'edit-actions';
+                    actionsContainer.className = 'flex gap-3 mt-3';
+                    originalSaveBtn.parentNode.appendChild(actionsContainer);
+                } else {
+                    actionsContainer.innerHTML = '';
+                }
+
+                // Save Changes button
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'flex-1 py-4 bg-blue-800 hover:bg-blue-900 active:bg-blue-950 text-white font-bold rounded-3xl text-lg flex items-center justify-center gap-x-2 transition-all';
+                saveBtn.innerHTML = `<i class="fa-solid fa-save"></i> <span>Save</span>`;
+                saveBtn.onclick = () => {
+                    updateExistingEntry(editingEntryId, originalSaveBtn, originalHTML, originalOnClick);
+                    // Clean up the edit actions container
+                    const container = document.getElementById('edit-actions');
+                    if (container) container.remove();
+                    originalSaveBtn.style.display = '';
+                };
+
+                // Delete button (with confirmation)
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'flex-1 py-4 border border-red-300 text-red-600 hover:bg-red-50 font-semibold rounded-3xl text-lg flex items-center justify-center gap-x-2 transition-colors';
+                deleteBtn.innerHTML = `<i class="fa-solid fa-trash"></i> <span>Delete</span>`;
+                deleteBtn.onclick = () => {
+                    deleteEntry(editingEntryId);
+                    // Clean up
+                    const container = document.getElementById('edit-actions');
+                    if (container) container.remove();
+                    originalSaveBtn.style.display = '';
+                };
+
+                // Cancel button
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'flex-1 py-4 border border-stone-300 text-stone-700 hover:bg-stone-50 font-semibold rounded-3xl text-lg flex items-center justify-center gap-x-2 transition-colors';
+                cancelBtn.innerHTML = `<i class="fa-solid fa-times"></i> <span>Cancel</span>`;
+                cancelBtn.onclick = () => {
+                    cancelEdit(originalHTML, originalOnClick);
+                    const container = document.getElementById('edit-actions');
+                    if (container) container.remove();
+                    originalSaveBtn.style.display = '';
+                };
+
+                actionsContainer.appendChild(saveBtn);
+                actionsContainer.appendChild(deleteBtn);
+                actionsContainer.appendChild(cancelBtn);
+            }
+        }
+
+        function cancelEdit(originalHTML, originalOnClick) {
+            // Clear editing state
+            editingEntryId = null;
+            currentPhotoData = null;
+
+            // Reset form
+            document.getElementById('transcript').value = '';
+            document.getElementById('additional-notes').value = '';
+            document.getElementById('block-input').value = '';
+            const placeholder = document.getElementById('photo-placeholder');
+            const container = document.getElementById('photo-preview-container');
+            placeholder.classList.remove('hidden');
+            container.classList.add('hidden');
+
+            // Remove any edit buttons we added
+            const editActions = document.getElementById('edit-actions');
+            if (editActions) editActions.remove();
+
+            // Restore original save button
+            const saveBtn = document.querySelector('#capture-page button');
+            if (saveBtn) {
+                saveBtn.style.display = '';
+                saveBtn.innerHTML = originalHTML || `<i class="fa-solid fa-save"></i> <span>SAVE TO SECOND BRAIN</span>`;
+                saveBtn.onclick = originalOnClick || saveEntry;
+            }
+
+            // Go back to previous sensible page
+            showPage('entries-page');
+        }
+
+        function deleteEntry(entryId) {
+            if (!confirm("Delete this entry permanently?\nThis cannot be undone.")) {
+                return;
+            }
+
+            entries = entries.filter(e => e.id !== entryId);
+            saveEntries();
+            showToast("Entry deleted.", "info");
+            triggerHaptic(30);
+
+            // Clean up edit state if we were editing this entry
+            if (editingEntryId === entryId) {
+                editingEntryId = null;
+                currentPhotoData = null;
+            }
+
+            showPage('entries-page');
+        }
+
+        function updateExistingEntry(entryId, saveBtn, originalHTML, originalOnClick) {
+            const entryIndex = entries.findIndex(e => e.id === entryId);
+            if (entryIndex === -1) return;
+
+            const transcript = document.getElementById('transcript').value.trim();
+            const additional = document.getElementById('additional-notes').value.trim();
+            const category = document.getElementById('category-select').value;
+            const block = document.getElementById('block-input').value.trim();
+
+            entries[entryIndex].transcript = transcript || '(No voice transcript)';
+            entries[entryIndex].additionalNotes = additional;
+            entries[entryIndex].category = category;
+            entries[entryIndex].block = block || "Not specified";
+            entries[entryIndex].photo = currentPhotoData;
+
+            saveEntries();
+
+            // Reset editing state
+            editingEntryId = null;
+            currentPhotoData = null;
+
+            // Reset form
+            document.getElementById('transcript').value = '';
+            document.getElementById('additional-notes').value = '';
+            document.getElementById('block-input').value = '';
+
+            const placeholder = document.getElementById('photo-placeholder');
+            const container = document.getElementById('photo-preview-container');
+            placeholder.classList.remove('hidden');
+            container.classList.add('hidden');
+
+            // Remove cancel button
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) cancelBtn.remove();
+
+            // Restore original save button
+            if (saveBtn) {
+                saveBtn.innerHTML = originalHTML || `<i class="fa-solid fa-save"></i> <span>SAVE TO SECOND BRAIN</span>`;
+                saveBtn.onclick = originalOnClick || saveEntry;
+            }
+
+            showToast("Entry updated successfully!");
+            triggerHaptic(50);
+
+            setTimeout(() => {
+                showPage('entries-page');
+            }, 600);
+        }
+
+        function deleteCurrentEntry() {
+            if (!currentEntryId || !confirm("Delete this entry permanently?")) return;
+
+            entries = entries.filter(e => e.id !== currentEntryId);
+            saveEntries();
+            closeModal();
+            showToast("Entry deleted.", "info");
+
+            // Refresh current view
+            const currentPage = document.querySelector('.page:not(.hidden)');
+            if (currentPage) {
+                if (currentPage.id === 'entries-page') renderEntriesList();
+                if (currentPage.id === 'dashboard-page') updateDashboard();
+            }
+        }
+
+        function exportJSON() {
+            if (entries.length === 0) {
+                showToast("No entries to export yet.", "info");
+                return;
+            }
+            
+            const dataStr = JSON.stringify(entries, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `litchi-second-brain-backup-${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast("Backup downloaded. Keep it safe!", "success");
+        }
+
+        function exportCSV() {
+            if (entries.length === 0) {
+                showToast("No entries to export.", "info");
+                return;
+            }
+
+            let csv = "Timestamp,Category,Block,Transcript,Additional Notes,Has Photo\n";
+            
+            entries.forEach(e => {
+                const ts = new Date(e.timestamp).toISOString();
+                const cat = (e.category || '').replace(/"/g, '""');
+                const block = (e.block || '').replace(/"/g, '""');
+                const trans = (e.transcript || '').replace(/"/g, '""').replace(/\n/g, ' ');
+                const add = (e.additionalNotes || '').replace(/"/g, '""').replace(/\n/g, ' ');
+                const hasPhoto = e.photo ? 'Yes' : 'No';
+                
+                csv += `"${ts}","${cat}","${block}","${trans}","${add}","${hasPhoto}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = `litchi-second-brain-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showToast("CSV exported for Excel / analysis.", "success");
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported)) {
+                        throw new Error("Invalid format");
+                    }
+                    
+                    if (!confirm(`Import ${imported.length} entries? This will REPLACE your current data.`)) {
+                        return;
+                    }
+                    
+                    entries = imported;
+                    saveEntries();
+                    showToast(`Successfully imported ${imported.length} entries.`, "success");
+                    
+                    // Refresh views
+                    showPage('dashboard-page');
+                    
+                } catch (err) {
+                    showToast("Import failed. Make sure it's a valid Litchi Second Brain JSON backup.", "error");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // reset
+        }
+
+        function importBulkPhotos(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const count = files.length;
+            if (!confirm(`Import ${count} photo(s) as new entries? Each will be added with today's date and "General Observations" category. You can edit them afterwards to add voice notes, block, etc.`)) {
+                event.target.value = '';
+                return;
+            }
+
+            let importedCount = 0;
+            const today = new Date().toISOString();
+
+            Array.from(files).forEach((file, index) => {
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Resize like normal photo capture
+                        const canvas = document.createElement('canvas');
+                        const maxW = 1024;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxW) {
+                            h = Math.round(h * (maxW / w));
+                            w = maxW;
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const photoData = canvas.toDataURL('image/jpeg', 0.78);
+
+                        const newEntry = {
+                            id: Date.now() + index,
+                            timestamp: today,
+                            category: "General Observations",
+                            block: "Not specified",
+                            transcript: "(Imported photo - add voice note or description)",
+                            photo: photoData,
+                            additionalNotes: "",
+                            location: null,
+                            gps: null
+                        };
+
+                        entries.unshift(newEntry);
+                        importedCount++;
+
+                        if (importedCount === count) {
+                            saveEntries();
+                            showToast(`${importedCount} photos imported successfully. Check the All Entries tab.`, "success");
+                            showPage('entries-page');
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            event.target.value = ''; // reset input
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast max-w-xs px-4 py-3 rounded-2xl shadow-lg flex items-start gap-x-3 text-sm ${
+                type === 'success' ? 'bg-emerald-700 text-white' : 
+                type === 'error' ? 'bg-red-600 text-white' : 'bg-stone-700 text-white'
+            }`;
+            
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'info') icon = 'fa-info-circle';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} mt-0.5 flex-shrink-0"></i>
+                <div class="flex-1">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'all 0.3s ease';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 200);
+            }, 3800);
+        }
+
+        // PWA Install
+        let deferredPrompt = null;
+
+        function setupPWAInstall() {
+            const installBtn = document.getElementById('install-btn');
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.style.display = 'flex';
+            });
+
+            // Hide button if already installed or not supported
+            window.addEventListener('appinstalled', () => {
+                installBtn.style.display = 'none';
+                deferredPrompt = null;
+            });
+            
+            // iOS-specific handling
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS && !window.navigator.standalone) {
+                // On iOS Safari, show the install button with iOS instructions
+                installBtn.style.display = 'flex';
+                installBtn.innerHTML = `<i class="fa-solid fa-plus mr-1.5"></i> <span>Add to Home Screen</span>`;
+            }
+        }
+
+        function installPWA() {
+            const installBtn = document.getElementById('install-btn');
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+            if (isIOS) {
+                showToast("On iPhone/iPad: Tap the Share button (square with ↑) at the bottom, then scroll and tap 'Add to Home Screen'. The app will appear on your home screen like a native Apple app.", "info");
+                return;
+            }
+
+            if (!deferredPrompt) {
+                showToast("To install: In Chrome/Edge tap the menu (⋮) → 'Install app' or 'Add to Home screen'.", "info");
+                return;
+            }
+            
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    showToast("Thank you! The app is now installed.", "success");
+                }
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            });
+        }
+
+        // Keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                if (e.metaKey && e.key === "/") {
+                    e.preventDefault();
+                    const search = document.getElementById('search-input');
+                    if (search) {
+                        showPage('entries-page');
+                        setTimeout(() => search.focus(), 100);
+                    }
+                }
+                
+                if (e.key === "?" && document.activeElement.tagName === "BODY") {
+                    e.preventDefault();
+                    showPage('capture-page');
+                    setTimeout(() => {
+                        const mic = document.getElementById('mic-btn');
+                        if (mic) mic.focus();
+                    }, 150);
+                }
+            });
+            
+            // Add hint in console for devs
+            console.log('%c[Litchi Second Brain] Keyboard: Cmd/Ctrl + / to search • ? to quick capture', 'color:#64748b');
+        }
+
+        // Initialize everything
+        function initializeApp() {
+            initializeTailwind();
+            loadEntries();
+            
+            // Show capture page by default
+            document.getElementById('capture-page').classList.remove('hidden');
+            document.getElementById('tab-capture').classList.add('active', 'bg-emerald-700', 'text-white');
+            
+            // Initial dashboard population (in case user switches immediately)
+            // We lazy load it when page is shown
+            
+            // Setup PWA
+            setupPWAInstall();
+            
+            // Keyboard
+            setupKeyboardShortcuts();
+            
+            // Populate category filter once
+            setTimeout(() => {
+                populateCategoryFilter();
+            }, 300);
+            
+            // Welcome toast on very first load (only if seeded demo data exists and no previous use)
+            const hasUsedBefore = localStorage.getItem('litchiSecondBrain_seenWelcome');
+            if (!hasUsedBefore && entries.length > 0 && entries[0].id < Date.now() - 100000) {
+                setTimeout(() => {
+                    showToast("Welcome! I've added two sample entries so you can explore. Delete them anytime.", "info");
+                    localStorage.setItem('litchiSecondBrain_seenWelcome', 'true');
+                }, 1800);
+            }
+            
+            // Make sure photo state is clean
+            currentPhotoData = null;
+            
+            // Bonus: Allow clicking logo to go home / capture
+            const logo = document.querySelector('header .flex.items-center');
+            if (logo) {
+                logo.style.cursor = 'pointer';
+                logo.onclick = () => showPage('capture-page');
+            }
+            
+            console.log('%c[Litchi Second Brain] Initialized successfully. Ready for field use.', 'color:#166534');
+        }
+
+        // Boot the app
+        window.onload = initializeApp;
+        
+        // Expose some functions for debugging / future integration if needed
+        window.LitchiBrain = {
+            getEntries: () => entries,
+            clearAll: () => { if(confirm('Clear ALL data?')) { entries = []; localStorage.removeItem(STORAGE_KEY); location.reload(); } },
+            exportData: () => exportJSON()
+        };
+    </script>
+</body>
+</html>
